@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NutriAsist – Dyt. Kübra Nur Kılıçer</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --gold: #B8860B;
+  --gold-light: #D4A843;
+  --gold-pale: #FDF8EE;
+  --gold-border: #E8D5A3;
+  --cream: #FEFCF7;
+  --warm-white: #FFFDF9;
+  --ink: #1A1612;
+  --muted: #7A6E63;
+  --light-muted: #C5BAB0;
+  --surface: #FFFFFF;
+  --surface2: #FAF7F2;
+  --border: #EDE5D8;
+  --green: #2D6A4F;
+  --green-pale: #EEF7F2;
+  --red: #C0392B;
+  --red-pale: #FDF2F0;
+  --blue: #1E4FA0;
+  --blue-pale: #EEF3FC;
+  --shadow-sm: 0 1px 4px rgba(26,22,18,.06);
+  --shadow: 0 4px 16px rgba(26,22,18,.08);
+  --shadow-lg: 0 12px 40px rgba(26,22,18,.12);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { font-size: 14px; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+}
+/* ─── SIDEBAR ─── */
+.sidebar {
+  position: fixed; left:0; top:0; bottom:0; width:220px;
+  background: var(--warm-white);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  z-index: 100;
+}
+.sidebar-logo {
+  padding: 28px 24px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.sidebar-logo img {
+  width: 64px; height: 64px; object-fit: contain;
+}
+.logo-text {
+  text-align: center;
+}
+.logo-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px; font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+.logo-sub {
+  font-size: 10px; color: var(--muted);
+  letter-spacing: 1px; text-transform: uppercase;
+  margin-top: 2px;
+}
+.nav-section { flex:1; padding: 18px 0; overflow-y: auto; }
+.nav-group-label {
+  font-size: 9px; font-weight: 600; letter-spacing: 1.8px;
+  text-transform: uppercase; color: var(--light-muted);
+  padding: 0 20px; margin: 14px 0 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 20px; cursor: pointer;
+  font-size: 12.5px; font-weight: 500; color: var(--muted);
+  transition: all .18s; border-left: 2px solid transparent;
+  user-select: none;
+}
+.nav-item:hover { color: var(--ink); background: var(--gold-pale); }
+.nav-item.active {
+  color: var(--gold); background: var(--gold-pale);
+  border-left-color: var(--gold); font-weight: 600;
+}
+.nav-icon { font-size: 14px; width: 18px; text-align: center; flex-shrink:0; }
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+.doc-chip {
+  display: flex; align-items: center; gap: 10px;
+}
+.doc-av {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px; font-weight: 700; color: #fff; flex-shrink:0;
+}
+.doc-name { font-size: 11.5px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+.doc-title { font-size: 10px; color: var(--muted); }
+
+/* ─── MAIN ─── */
+.main { margin-left: 220px; padding: 30px 36px; min-height: 100vh; }
+
+/* ─── TOPBAR ─── */
+.topbar { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
+.page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px; font-weight: 600; color: var(--ink);
+  line-height: 1;
+}
+.page-title span { color: var(--gold); font-style: italic; }
+.page-sub { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+.topbar-actions { display: flex; gap: 8px; align-items: center; flex-shrink:0; }
+
+/* ─── BUTTONS ─── */
+.btn-primary {
+  background: var(--gold); color: #fff;
+  border: none; border-radius: 8px;
+  padding: 8px 18px; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all .18s; display: inline-flex; align-items: center; gap: 5px;
+  box-shadow: 0 2px 8px rgba(184,134,11,.25);
+}
+.btn-primary:hover { background: #A07608; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(184,134,11,.3); }
+.btn-ghost {
+  background: var(--surface); color: var(--muted);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 14px; font-size: 12px; font-weight: 500;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all .18s; display: inline-flex; align-items: center; gap: 5px;
+}
+.btn-ghost:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-pale); }
+.btn-sm { padding: 5px 11px !important; font-size: 11.5px !important; }
+.btn-danger { background: var(--red-pale); color: var(--red); border: 1px solid #F0C0BB; border-radius: 7px; padding: 5px 11px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .18s; }
+.btn-danger:hover { background: var(--red); color: #fff; }
+
+/* ─── STATS ─── */
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--surface); border-radius: 14px;
+  padding: 18px 20px; border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  position: relative; overflow: hidden;
+  transition: transform .2s, box-shadow .2s;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.stat-card::before {
+  content: ''; position: absolute; top:0; left:0; right:0; height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+}
+.stat-card.green::before { background: linear-gradient(90deg, var(--green), #52B788); }
+.stat-card.blue::before { background: linear-gradient(90deg, var(--blue), #4C8FF0); }
+.stat-card.rose::before { background: linear-gradient(90deg, #9B2335, #D4566A); }
+.stat-label { font-size: 10.5px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px; }
+.stat-num { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 700; color: var(--ink); line-height: 1; }
+.stat-change { font-size: 10.5px; font-weight: 500; margin-top: 6px; color: var(--green); }
+.stat-change.neutral { color: var(--muted); }
+
+/* ─── CONTENT GRID ─── */
+.content-grid { display: grid; grid-template-columns: 1fr 300px; gap: 18px; }
+
+/* ─── CARD ─── */
+.card {
+  background: var(--surface); border-radius: 16px;
+  border: 1px solid var(--border); overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px 0;
+}
+.card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px; font-weight: 600; color: var(--ink);
+}
+.card-action { font-size: 11.5px; font-weight: 500; color: var(--gold); cursor: pointer; }
+.card-body { padding: 14px 20px 18px; }
+
+/* ─── RANDEVU ITEM ─── */
+.randevu-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 8px; border-radius: 10px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .15s;
+}
+.randevu-item:last-child { border-bottom: none; }
+.randevu-item:hover { background: var(--gold-pale); }
+.r-av {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--gold-pale), #F5E8C0);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 700; font-size: 14px; color: var(--gold); flex-shrink:0;
+  border: 1px solid var(--gold-border);
+}
+.r-info { flex:1; }
+.r-name { font-size: 13px; font-weight: 600; }
+.r-meta { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.r-time { font-size: 12px; font-weight: 600; text-align: right; color: var(--ink); }
+.badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+.badge.bekleniyor { background: #EEF3FC; color: #1E4FA0; border: 1px solid #A8BDE8; }
+.badge.tamamlandi { background: var(--green-pale); color: var(--green); border: 1px solid #B7E4CA; }
+.badge.iptal { background: #FDF2F0; color: #C0392B; border: 1px solid #F0C0BB; }
+.badge.ertelendi { background: #F5F5F5; color: #757575; border: 1px solid #CFCFCF; }
+.badge.yeni { background: #EEF3FC; color: #1E4FA0; border: 1px solid #A8BDE8; }
+.badge.onaylandi { background: var(--green-pale); color: var(--green); border: 1px solid #B7E4CA; }
+.badge.bekliyor { background: #EEF3FC; color: #1E4FA0; border: 1px solid #A8BDE8; }
+
+/* ─── QUICK ACTIONS ─── */
+.quick-grid { display: grid; gap: 7px; }
+.quick-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--surface2);
+  cursor: pointer; transition: all .18s;
+  font-size: 12.5px; font-weight: 500; color: var(--ink);
+}
+.quick-btn:hover { border-color: var(--gold); background: var(--gold-pale); color: var(--gold); }
+.quick-btn-icon { font-size: 16px; }
+
+/* ─── PAYMENT MINI CARDS ─── */
+.plan-mini-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.plan-mini {
+  border-radius: 10px; padding: 12px 10px; text-align: center;
+  border: 1px solid; cursor: pointer; transition: all .18s; position: relative;
+}
+.plan-mini.aylik { background: #FFFDF4; border-color: #EDD98A; }
+.plan-mini.ucaylik { background: #F2FAF5; border-color: #A8DBBE; }
+.plan-mini.altiaylik { background: #F0F5FC; border-color: #A8BDE8; }
+.plan-mini:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.plan-mini-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; }
+.plan-mini.aylik .plan-mini-label { color: var(--gold); }
+.plan-mini.ucaylik .plan-mini-label { color: var(--green); }
+.plan-mini.altiaylik .plan-mini-label { color: var(--blue); }
+.plan-mini-price { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 700; margin-top: 3px; }
+.plan-mini-desc { font-size: 9.5px; color: var(--muted); margin-top: 1px; }
+.plan-mini-badge {
+  position: absolute; top: 5px; right: 5px;
+  font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 20px; color: #fff;
+}
+
+/* ─── NOT ITEM ─── */
+.not-item {
+  background: var(--gold-pale); border-left: 2px solid var(--gold);
+  border-radius: 0 8px 8px 0; padding: 9px 12px; margin-bottom: 7px;
+}
+.not-hasta { font-size: 10.5px; font-weight: 700; color: var(--gold); }
+.not-text { font-size: 12.5px; margin-top: 3px; font-weight: 400; line-height: 1.5; }
+.not-tarih { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  display: none; position: fixed; inset:0;
+  background: rgba(26,22,18,.5);
+  z-index: 1000; backdrop-filter: blur(6px);
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border-radius: 20px;
+  padding: 28px; width: 520px; max-height: 88vh; overflow-y: auto;
+  animation: mIn .22s ease;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+.modal-lg { width: 620px; }
+@keyframes mIn { from { opacity:0; transform:translateY(12px) scale(.97); } to { opacity:1; transform:none; } }
+.modal-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; font-weight: 600; margin-bottom: 20px; color: var(--ink);
+}
+.modal-title span { color: var(--gold); font-style: italic; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 10.5px; font-weight: 600; color: var(--muted); margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: .5px; }
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 9px 12px;
+  border: 1px solid var(--border); border-radius: 8px;
+  font-size: 13px; font-family: 'DM Sans', sans-serif;
+  outline: none; transition: border-color .18s;
+  color: var(--ink); background: var(--surface2);
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--gold); background: #fff; }
+.form-textarea { resize: vertical; min-height: 76px; }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+.btn-cancel { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px; font-size: 12.5px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+/* ─── HASTA ─── */
+.search-input {
+  width: 100%; padding: 9px 13px;
+  border: 1px solid var(--border); border-radius: 9px;
+  font-size: 12.5px; font-family: 'DM Sans', sans-serif;
+  outline: none; transition: border-color .18s;
+  background: var(--surface); margin-bottom: 14px;
+}
+.search-input:focus { border-color: var(--gold); }
+.hasta-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 12px;
+  border: 1px solid var(--border); cursor: pointer;
+  transition: all .18s; background: var(--surface); margin-bottom: 7px;
+}
+.hasta-row:hover { border-color: var(--gold); box-shadow: 0 3px 12px rgba(184,134,11,.1); }
+.h-av {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold-pale), #F5E8C0);
+  border: 1px solid var(--gold-border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 700; font-size: 15px; color: var(--gold); flex-shrink:0;
+}
+.h-name { font-size: 13px; font-weight: 600; }
+.h-info { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.h-actions { margin-left: auto; display: flex; gap: 5px; }
+.icon-btn { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; transition: all .18s; }
+.icon-btn:hover { border-color: var(--gold); background: var(--gold-pale); }
+
+/* ─── DETAY ─── */
+.detay-header {
+  background: linear-gradient(135deg, var(--ink) 0%, #2C241C 100%);
+  border-radius: 14px; padding: 22px; color: #fff; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 16px; position: relative; overflow: hidden;
+}
+.detay-header::before {
+  content: ''; position: absolute; top: -20px; right: -20px;
+  width: 120px; height: 120px; border-radius: 50%;
+  background: rgba(184,134,11,.15);
+}
+.detay-av {
+  width: 56px; height: 56px; border-radius: 14px;
+  background: rgba(184,134,11,.25); border: 1px solid rgba(184,134,11,.4);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; font-weight: 700; color: var(--gold-light);
+}
+.detay-isim { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; }
+.detay-meta { font-size: 12px; opacity: .7; margin-top: 3px; }
+.detay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.detay-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+.detay-card-title { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px; }
+.ilag-tag { display: inline-flex; padding: 3px 9px; background: var(--gold-pale); border: 1px solid var(--gold-border); border-radius: 20px; font-size: 11px; font-weight: 500; color: var(--gold); margin: 2px; }
+.hastalik-tag { display: inline-flex; padding: 3px 9px; background: var(--red-pale); border: 1px solid #F0C0BB; border-radius: 20px; font-size: 11px; font-weight: 500; color: var(--red); margin: 2px; }
+
+/* ─── TAKVİM ─── */
+.cal-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+.cal-nav-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all .18s; color: var(--muted); }
+.cal-nav-btn:hover { border-color: var(--gold); color: var(--gold); }
+.cal-title { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 600; min-width: 170px; text-align: center; }
+.cal-views { display: flex; gap: 2px; background: var(--surface2); border-radius: 9px; padding: 3px; border: 1px solid var(--border); }
+.cal-view-btn { padding: 5px 13px; border-radius: 7px; font-size: 11.5px; font-weight: 500; cursor: pointer; border: none; background: transparent; font-family: 'DM Sans', sans-serif; color: var(--muted); transition: all .18s; }
+.cal-view-btn.active { background: var(--surface); color: var(--gold); box-shadow: var(--shadow-sm); font-weight: 600; }
+/* GÜNLÜK */
+.daily-grid { display: grid; gap: 5px; }
+.time-slot { display: flex; gap: 10px; align-items: flex-start; }
+.time-label { font-size: 10.5px; font-weight: 500; color: var(--muted); width: 40px; flex-shrink:0; padding-top: 10px; }
+.time-cell { flex:1; min-height: 40px; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); padding: 5px 9px; cursor: pointer; transition: all .18s; }
+.time-cell:hover { border-color: var(--gold); background: var(--gold-pale); }
+.time-cell.has-appt { background: #FFFBF0; border-color: var(--gold-border); }
+.appt-chip { display: flex; align-items: center; gap: 7px; padding: 3px 0; }
+.apdot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex-shrink:0; }
+.apdot.green { background: var(--green); }
+.apdot.orange { background: #1E4FA0; }
+.apdot.red { background: #C0392B; }
+.apdot.grey { background: #9E9E9E; }
+.ap-name { font-size: 12px; font-weight: 600; }
+.ap-type { font-size: 10.5px; color: var(--muted); }
+/* HAFTALIK */
+.week-header-row { display: grid; grid-template-columns: 42px repeat(7,1fr); gap: 3px; margin-bottom: 4px; }
+.wh-cell { text-align: center; padding: 4px; }
+.wh-day { font-size: 9.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.wh-date { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; }
+.wh-date.today { color: var(--gold); }
+.week-row { display: grid; grid-template-columns: 42px repeat(7,1fr); gap: 3px; }
+.week-time-cell { font-size: 10px; color: var(--muted); text-align: right; padding-right: 5px; display: flex; align-items: center; justify-content: flex-end; }
+.week-day-cell { min-height: 42px; border: 1px solid var(--border); border-radius: 7px; padding: 2px; cursor: pointer; transition: background .15s; background: var(--surface); }
+.week-day-cell:hover { background: var(--gold-pale); border-color: var(--gold-border); }
+.week-day-cell.today-col { background: #FFFBF0; }
+.wk-chip { font-size: 9.5px; font-weight: 600; background: var(--gold); color: #fff; border-radius: 4px; padding: 2px 5px; margin-bottom: 1px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.wk-chip.green { background: var(--green); }
+.wk-chip.blue { background: var(--blue); }
+.wk-chip.orange { background: #1E4FA0; }
+.wk-chip.red { background: #C0392B; }
+.wk-chip.grey { background: #9E9E9E; }
+/* AYLIK */
+.month-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+.month-dow { text-align: center; font-size: 9.5px; font-weight: 600; color: var(--muted); padding-bottom: 6px; text-transform: uppercase; letter-spacing: .4px; }
+.month-cell { min-height: 74px; border: 1px solid var(--border); border-radius: 8px; padding: 5px; cursor: pointer; transition: all .18s; background: var(--surface); }
+.month-cell:hover { border-color: var(--gold); }
+.month-cell.today { border-color: var(--gold); background: #FFFBF0; }
+.month-cell.other-month { background: var(--surface2); opacity: .55; }
+.month-num { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.month-cell.today .month-num { color: var(--gold); }
+.m-chip { font-size: 9.5px; font-weight: 600; background: var(--gold); color: #fff; border-radius: 4px; padding: 1px 5px; margin-bottom: 1px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.m-chip.green { background: var(--green); }
+.m-chip.orange { background: #1E4FA0; }
+.m-chip.red { background: #C0392B; }
+.m-chip.grey { background: #9E9E9E; }
+/* SENELİK */
+.year-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.year-month-card { border: 1px solid var(--border); border-radius: 10px; padding: 11px; background: var(--surface); }
+.year-month-title { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-weight: 600; margin-bottom: 7px; }
+.year-mini-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 1px; }
+.year-mini-dow { font-size: 7.5px; color: var(--muted); text-align: center; font-weight: 600; }
+.year-mini-day { font-size: 8.5px; text-align: center; padding: 2px; border-radius: 3px; cursor: pointer; }
+.year-mini-day.has-appt { background: var(--gold-pale); color: var(--gold); font-weight: 700; }
+.year-mini-day.today { background: var(--gold); color: #fff; font-weight: 700; }
+/* MESAJ */
+.mesaj-satir { display: flex; align-items: center; gap: 11px; padding: 11px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface); margin-bottom: 7px; }
+.mesaj-cb { width: 15px; height: 15px; accent-color: var(--gold); cursor: pointer; }
+/* ÖDEME FULL */
+.odeme-full { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+.odeme-big {
+  border-radius: 16px; padding: 24px; text-align: center;
+  transition: all .2s; border: 1px solid var(--border);
+  background: var(--surface); position: relative; overflow: hidden;
+}
+.odeme-big::before {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+}
+.odeme-big.a::before { background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+.odeme-big.b::before { background: linear-gradient(90deg, var(--green), #52B788); }
+.odeme-big.c::before { background: linear-gradient(90deg, var(--blue), #4C8FF0); }
+.odeme-big:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+/* TABS */
+.tabs { display: flex; gap: 3px; background: var(--surface2); border-radius: 10px; padding: 3px; border: 1px solid var(--border); margin-bottom: 16px; }
+.tab { flex:1; text-align: center; padding: 7px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all .18s; color: var(--muted); }
+.tab.active { background: var(--surface); color: var(--gold); box-shadow: var(--shadow-sm); font-weight: 600; }
+.page { display: none; }
+.page.active { display: block; }
+.edit-pencil { font-size: 11px; cursor: pointer; opacity: .4; transition: opacity .15s; }
+.edit-pencil:hover { opacity: 1; }
+/* DIVIDER */
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+/* TOAST */
+#toast { display: none; position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 500; z-index: 9999; box-shadow: var(--shadow-lg); }
+@keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform:none; } }
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+/* PLAN EDIT HIGHLIGHT */
+.editable-price { border-bottom: 1px dashed var(--gold-border); display: inline-block; min-width: 60px; cursor: text; padding: 1px 3px; border-radius: 3px; }
+.editable-price:focus { outline: none; border-bottom-color: var(--gold); background: var(--gold-pale); }
+
+/* ─── GİRİŞ EKRANI ─── */
+#loginScreen {
+  display: none; position: fixed; inset: 0;
+  background: var(--cream);
+  z-index: 9999;
+  align-items: center; justify-content: center;
+}
+#loginScreen.active { display: flex; }
+.login-box {
+  background: var(--surface); border-radius: 24px;
+  border: 1px solid var(--border); box-shadow: var(--shadow-lg);
+  padding: 44px 40px; width: 380px; text-align: center;
+}
+.login-logo { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 700; color: var(--gold); margin-bottom: 4px; }
+.login-sub { font-size: 11.5px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 32px; }
+.login-input { width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; margin-bottom: 12px; background: var(--surface2); color: var(--ink); transition: border-color .18s; }
+.login-input:focus { border-color: var(--gold); background: #fff; }
+.login-btn { width: 100%; padding: 12px; background: var(--gold); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .18s; margin-top: 4px; box-shadow: 0 3px 12px rgba(184,134,11,.3); }
+.login-btn:hover { background: #A07608; transform: translateY(-1px); }
+.login-error { font-size: 12px; color: var(--red); margin-top: 10px; display: none; }
+.login-error.show { display: block; }
+#appLoader { display: none; position: fixed; inset: 0; background: var(--cream); z-index: 9998; align-items: center; justify-content: center; flex-direction: column; gap: 14px; }
+#appLoader.active { display: flex; }
+.loader-ring { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-text { font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+
+<!-- GİRİŞ EKRANI -->
+<div id="loginScreen" class="active">
+  <div class="login-box">
+    <div style="font-size:42px;margin-bottom:12px">🌿</div>
+    <div class="login-logo">NutriAsist</div>
+    <div class="login-sub">Dyt. Kübra Nur Kılıçer</div>
+    <input class="login-input" type="email" id="loginEmail" placeholder="E-posta adresi" autocomplete="email">
+    <input class="login-input" type="password" id="loginPass" placeholder="Şifre" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Giriş Yap</button>
+    <div class="login-error" id="loginError">E-posta veya şifre hatalı.</div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="appLoader">
+  <div class="loader-ring"></div>
+  <div class="loader-text">Veriler yükleniyor...</div>
+</div>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img id="logoImg" src="data:image/png;base64,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" alt="Logo">
+    <div class="logo-text">
+      <div class="logo-name">Kübra Nur Kılıçer</div>
+      <div class="logo-sub">Diyetisyen</div>
+    </div>
+  </div>
+  <nav class="nav-section">
+    <div class="nav-group-label">Ana Menü</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-icon">🏠</span>Genel Bakış</div>
+    <div class="nav-item" onclick="showPage('randevular',this)"><span class="nav-icon">📅</span>Randevular</div>
+    <div class="nav-item" onclick="showPage('hastalar',this)"><span class="nav-icon">👥</span>Hastalar</div>
+    <div class="nav-item" onclick="showPage('mesajlar',this)"><span class="nav-icon">💬</span>Mesaj Gönder</div>
+    <div class="nav-group-label">Finans</div>
+    <div class="nav-item" onclick="showPage('odemeler',this)"><span class="nav-icon">💳</span>Ödeme Planları</div>
+    <div class="nav-group-label">Klinik</div>
+    <div class="nav-item" onclick="showPage('notlar',this)"><span class="nav-icon">📋</span>Hasta Notları</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="doc-chip">
+      <div class="doc-av">K</div>
+      <div><div class="doc-name">Kübra Nur Kılıçer</div><div class="doc-title">Diyetisyen</div></div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="page active">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Hoş Geldiniz, <span>Kübra Nur</span></div>
+      <div class="page-sub" id="bugunTarih"></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-ghost" onclick="openModal('randevuModal')">📅 Randevu Ekle</button>
+      <button class="btn-primary" onclick="openModal('hastaModal')">＋ Yeni Hasta</button>
+    </div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Bugünkü Randevu</div>
+      <div class="stat-num" id="statBugun">0</div>
+      <div class="stat-change" id="statBugunSub"></div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Toplam Hasta</div>
+      <div class="stat-num" id="statHasta">0</div>
+      <div class="stat-change neutral">Aktif kayıtlar</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-label">Toplam Tahsilat</div>
+      <div class="stat-num" id="statGelir">0₺</div>
+      <div class="stat-change neutral">Kayıtlı ödemeler</div>
+    </div>
+    <div class="stat-card rose">
+      <div class="stat-label">Bu Hafta Randevu</div>
+      <div class="stat-num" id="statHaftalik">0</div>
+      <div class="stat-change neutral">Haftalık toplam</div>
+    </div>
+  </div>
+  <div class="content-grid">
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header"><div class="card-title">Bugünkü Randevular</div><div class="card-action" onclick="showPage('randevular',document.querySelector('[onclick*=randevular]'))">Tümünü Gör →</div></div>
+        <div class="card-body" id="dashBugunRandevu"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Son Hasta Notları</div><div class="card-action" onclick="showPage('notlar',document.querySelector('[onclick*=notlar]'))">Tümünü Gör →</div></div>
+        <div class="card-body" id="dashNotlar"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-header"><div class="card-title">Ödeme Planları</div><div class="card-action" onclick="showPage('odemeler',document.querySelector('[onclick*=odemeler]'))">Düzenle →</div></div>
+        <div class="card-body">
+          <div class="plan-mini-grid" id="planMiniGrid"></div>
+          <button class="btn-primary" style="width:100%;margin-top:12px;justify-content:center" onclick="openModal('odemeModal')">＋ Ödeme Planı Ata</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Hızlı İşlemler</div></div>
+        <div class="card-body quick-grid">
+          <div class="quick-btn" onclick="openModal('mesajModal')"><span class="quick-btn-icon">💬</span>Toplu SMS / E-posta Gönder</div>
+          <div class="quick-btn" onclick="openModal('randevuModal')"><span class="quick-btn-icon">📅</span>Yeni Randevu Oluştur</div>
+          <div class="quick-btn" onclick="openModal('notModal')"><span class="quick-btn-icon">📝</span>Hasta Notu Ekle</div>
+          <div class="quick-btn" onclick="openModal('hastaModal')"><span class="quick-btn-icon">👤</span>Yeni Hasta Kaydı</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RANDEVULAR -->
+<div id="randevular" class="page">
+  <div class="topbar">
+    <div><div class="page-title">Randevu <span>Takvimi</span></div></div>
+    <button class="btn-primary" onclick="openModal('randevuModal')">＋ Yeni Randevu</button>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <div class="cal-toolbar">
+        <button class="cal-nav-btn" onclick="calNav(-1)">‹</button>
+        <div class="cal-title" id="calTitle">—</div>
+        <button class="cal-nav-btn" onclick="calNav(1)">›</button>
+        <button class="btn-ghost btn-sm" onclick="calGoToday()">Bugün</button>
+        <div style="margin-left:auto" class="cal-views">
+          <button class="cal-view-btn" onclick="setCalView('day',this)">Günlük</button>
+          <button class="cal-view-btn active" onclick="setCalView('week',this)">Haftalık</button>
+          <button class="cal-view-btn" onclick="setCalView('month',this)">Aylık</button>
+          <button class="cal-view-btn" onclick="setCalView('year',this)">Senelik</button>
+        </div>
+      </div>
+      <div id="calBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- HASTALAR -->
+<div id="hastalar" class="page">
+  <div class="topbar">
+    <div><div class="page-title">Hasta <span>Listesi</span></div></div>
+    <button class="btn-primary" onclick="openModal('hastaModal')">＋ Yeni Hasta</button>
+  </div>
+  <div id="hastaListeView">
+    <input class="search-input" placeholder="🔍  Hasta ara (ad, telefon, hastalık...)" oninput="filterHastalar(this.value)">
+    <div id="hastaGrid"></div>
+  </div>
+  <div id="hastaDetayView" style="display:none"></div>
+</div>
+
+<!-- MESAJLAR -->
+<div id="mesajlar" class="page">
+  <div class="topbar">
+    <div><div class="page-title">Mesaj <span>Gönder</span></div></div>
+    <button class="btn-primary" onclick="sendBulkMessage()">📤 Seçilenlere Gönder</button>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header"><div class="card-title">Mesaj Şablonu</div></div>
+    <div class="card-body">
+      <div class="tabs">
+        <div class="tab active" onclick="switchMesajTab(this,'sms')">📱 SMS</div>
+        <div class="tab" onclick="switchMesajTab(this,'eposta')">📧 E-posta</div>
+        <div class="tab" onclick="switchMesajTab(this,'haftalik')">🔔 Haftalık</div>
+      </div>
+      <textarea class="form-textarea" id="mesajSablon" style="min-height:100px;margin-bottom:9px">Sayın [AD SOYAD], [TARİH] tarihindeki randevunuzu hatırlatmak isteriz. Dyt. Kübra Nur Kılıçer — NutriAsist 🌿</textarea>
+      <div style="font-size:11px;color:var(--muted)">💡 Değişkenler: [AD SOYAD] [TARİH] [SAAT] [PLAN]</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Alıcıları Seç</div></div>
+    <div class="card-body">
+      <div style="margin-bottom:10px;display:flex;gap:7px">
+        <button class="btn-ghost btn-sm" onclick="selectAll(true)">✅ Tümünü Seç</button>
+        <button class="btn-ghost btn-sm" onclick="selectAll(false)">⬜ Seçimi Kaldır</button>
+      </div>
+      <div id="mesajHastaList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ÖDEMELER -->
+<div id="odemeler" class="page">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Ödeme <span>Planları</span></div>
+      <div class="page-sub">Fiyatları ve plan detaylarını düzenleyebilirsiniz.</div>
+    </div>
+    <button class="btn-primary" onclick="openModal('odemeModal')">＋ Plan Ata</button>
+  </div>
+  <!-- PLAN EDIT CARDS -->
+  <div class="odeme-full" id="odemePlanCards"></div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Ödeme Kayıtları</div></div>
+    <div class="card-body" id="odemeListesi"></div>
+  </div>
+</div>
+
+<!-- NOTLAR -->
+<div id="notlar" class="page">
+  <div class="topbar">
+    <div><div class="page-title">Hasta <span>Notları</span></div></div>
+    <button class="btn-primary" onclick="openModal('notModal')">＋ Not Ekle</button>
+  </div>
+  <input class="search-input" placeholder="🔍  Not ara..." oninput="filterNotlar(this.value)">
+  <div id="notlarGrid"></div>
+</div>
+
+</main>
+
+<!-- MODALS -->
+<!-- Randevu -->
+<div class="modal-overlay" id="randevuModal">
+<div class="modal">
+  <div class="modal-title">📅 <span id="randevuModalTitle">Yeni Randevu</span></div>
+  <input type="hidden" id="editRandevuId">
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Hasta</label><select class="form-select" id="rHasta"></select></div>
+    <div class="form-group"><label class="form-label">Seans Türü</label><select class="form-select" id="rTur"><option>İlk Görüşme</option><option>Kontrol Seansı</option><option>Diyet Güncellemesi</option><option>Kilo Takibi</option><option>Değerlendirme</option></select></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Tarih</label><input class="form-input" type="date" id="rTarih"></div>
+    <div class="form-group">
+      <label class="form-label">Saat Aralığı</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <select class="form-select" id="rSaat" style="flex:1"></select>
+        <span style="color:var(--muted);font-size:12px;flex-shrink:0">→</span>
+        <select class="form-select" id="rSaatBitis" style="flex:1"></select>
+      </div>
+    </div>
+  </div>
+  <div class="form-group"><label class="form-label">Durum</label><select class="form-select" id="rDurum"><option value="bekleniyor">Görüşme Bekleniyor</option><option value="tamamlandi">Görüşme Tamamlandı</option><option value="iptal">Görüşme İptal Oldu</option><option value="ertelendi">Görüşme Ertelendi</option></select></div>
+  <div class="form-group"><label class="form-label">Hatırlatma Gönder</label><select class="form-select"><option>SMS + E-posta</option><option>Yalnızca SMS</option><option>Yalnızca E-posta</option><option>Gönderme</option></select></div>
+  <div class="form-group"><label class="form-label">Not</label><textarea class="form-textarea" id="rNot" placeholder="Randevu notu..."></textarea></div>
+  <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('randevuModal')">İptal</button><button class="btn-primary" onclick="saveRandevu()">Kaydet</button></div>
+</div>
+</div>
+
+<!-- Hasta -->
+<div class="modal-overlay" id="hastaModal">
+<div class="modal modal-lg">
+  <div class="modal-title">👤 <span id="hastaModalTitle">Yeni Hasta Kaydı</span></div>
+  <input type="hidden" id="editHastaId">
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Ad</label><input class="form-input" id="hAd" placeholder="Ad"></div>
+    <div class="form-group"><label class="form-label">Soyad</label><input class="form-input" id="hSoyad" placeholder="Soyad"></div>
+  </div>
+  <div class="form-row3">
+    <div class="form-group"><label class="form-label">Yaş</label><input class="form-input" type="number" id="hYas" placeholder="25"></div>
+    <div class="form-group"><label class="form-label">Cinsiyet</label><select class="form-select" id="hCinsiyet"><option>Kadın</option><option>Erkek</option></select></div>
+    <div class="form-group"><label class="form-label">Boy (cm)</label><input class="form-input" type="number" id="hBoy" placeholder="165"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Mevcut Kilo (kg)</label><input class="form-input" type="number" id="hKilo" placeholder="70"></div>
+    <div class="form-group"><label class="form-label">Hedef Kilo (kg)</label><input class="form-input" type="number" id="hHedefKilo" placeholder="60"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Telefon</label><input class="form-input" id="hTel" placeholder="0532 xxx xx xx"></div>
+    <div class="form-group"><label class="form-label">E-posta</label><input class="form-input" id="hEmail" placeholder="ornek@mail.com"></div>
+  </div>
+  <div class="form-group"><label class="form-label">Hastalıklar / Tanılar</label><input class="form-input" id="hHastalik" placeholder="Örn: Diyabet, Hipertansiyon, Çölyak..."></div>
+  <div class="form-group"><label class="form-label">Kullandığı İlaçlar</label><input class="form-input" id="hIlac" placeholder="Örn: Metformin 500mg, Omega-3..."></div>
+  <div class="form-group"><label class="form-label">Ödeme Planı</label><select class="form-select" id="hPlan"></select></div>
+  <div class="form-group"><label class="form-label">Notlar</label><textarea class="form-textarea" id="hNotlar" placeholder="Hasta hakkında genel notlar..."></textarea></div>
+  <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('hastaModal')">İptal</button><button class="btn-primary" onclick="saveHasta()">Kaydet</button></div>
+</div>
+</div>
+
+<!-- Not -->
+<div class="modal-overlay" id="notModal">
+<div class="modal">
+  <div class="modal-title">📝 Hasta <span>Notu</span></div>
+  <input type="hidden" id="editNotId">
+  <div class="form-group"><label class="form-label">Hasta</label><select class="form-select" id="nHasta"></select></div>
+  <div class="form-group"><label class="form-label">Not Türü</label><select class="form-select" id="nTur"><option>Genel Not</option><option>İlaç Bilgisi</option><option>Hastalık / Tanı</option><option>Diyet Kısıtlaması</option><option>Kilo Takibi</option></select></div>
+  <div class="form-group"><label class="form-label">Not</label><textarea class="form-textarea" id="nText" placeholder="Not içeriği..."></textarea></div>
+  <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('notModal')">İptal</button><button class="btn-primary" onclick="saveNot()">Kaydet</button></div>
+</div>
+</div>
+
+<!-- Mesaj -->
+<div class="modal-overlay" id="mesajModal">
+<div class="modal">
+  <div class="modal-title">💬 <span>Mesaj</span> Gönder</div>
+  <div class="form-group"><label class="form-label">Kanal</label><select class="form-select"><option>SMS + E-posta</option><option>Yalnızca SMS</option><option>Yalnızca E-posta</option></select></div>
+  <div class="form-group"><label class="form-label">Alıcı</label><select class="form-select"><option>Tüm hastalar</option><option>Bugün randevusu olanlar</option><option>Bu hafta randevusu olanlar</option></select></div>
+  <div class="form-group"><label class="form-label">Mesaj</label><textarea class="form-textarea">Sayın [AD SOYAD], randevunuzu hatırlatmak isteriz. Dyt. Kübra Nur Kılıçer 🌿</textarea></div>
+  <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('mesajModal')">İptal</button><button class="btn-primary" onclick="showToast('✅ Mesaj gönderildi!');closeModal('mesajModal')">Gönder</button></div>
+</div>
+</div>
+
+<!-- Ödeme -->
+<div class="modal-overlay" id="odemeModal">
+<div class="modal">
+  <div class="modal-title">💳 Ödeme <span>Planı</span> Ata</div>
+  <div class="form-group"><label class="form-label">Hasta</label><select class="form-select" id="oHasta"></select></div>
+  <div class="form-group"><label class="form-label">Plan</label><select class="form-select" id="oPlan" onchange="updateOdemeTutar()"></select></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Tarih</label><input class="form-input" type="date" id="oTarih"></div>
+    <div class="form-group"><label class="form-label">Ödeme Yöntemi</label><select class="form-select" id="oYontem"><option>Nakit</option><option>Kredi Kartı</option><option>Havale / EFT</option></select></div>
+  </div>
+  <div class="form-group"><label class="form-label">Tutar</label><input class="form-input" id="oTutar" readonly></div>
+  <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('odemeModal')">İptal</button><button class="btn-primary" onclick="saveOdeme()">Kaydet</button></div>
+</div>
+</div>
+
+<!-- Plan Düzenle Modal -->
+<div class="modal-overlay" id="planDuzenleModal">
+<div class="modal">
+  <div class="modal-title">✏️ Plan <span>Düzenle</span></div>
+  <input type="hidden" id="editPlanKey">
+  <div class="form-group"><label class="form-label">Plan Adı</label><input class="form-input" id="pAd" placeholder="Örn: Aylık Plan"></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Fiyat (₺)</label><input class="form-input" type="number" id="pFiyat" placeholder="1200"></div>
+    <div class="form-group"><label class="form-label">Seans Sayısı</label><input class="form-input" type="number" id="pSeans" placeholder="4"></div>
+  </div>
+  <div class="form-group"><label class="form-label">Süre Açıklaması</label><input class="form-input" id="pSure" placeholder="Örn: aylık, 3 aylık..."></div>
+  <div class="form-group"><label class="form-label">İndirim Notu (isteğe bağlı)</label><input class="form-input" id="pIndirim" placeholder="Örn: %11 tasarruf"></div>
+  <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('planDuzenleModal')">İptal</button><button class="btn-primary" onclick="savePlan()">Kaydet</button></div>
+</div>
+</div>
+
+<!-- Sil -->
+<div class="modal-overlay" id="silModal">
+<div class="modal" style="width:360px">
+  <div class="modal-title">🗑️ <span>Silme</span> Onayı</div>
+  <div style="font-size:13.5px;color:var(--muted);margin-bottom:18px" id="silText">Bu kaydı silmek istediğinize emin misiniz?</div>
+  <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('silModal')">İptal</button><button class="btn-primary" style="background:var(--red)" onclick="confirmSil()">Evet, Sil</button></div>
+</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════ SUPABASE ══════════════
+const SUPA_URL = 'https://cwlcqudlruwyywqqhjoj.supabase.co';
+const SUPA_KEY = 'sb_publishable_DpqoYtLg6cbROE_KclV0SQ_OqcixgY2';
+const { createClient } = supabase;
+const sb = createClient(SUPA_URL, SUPA_KEY);
+
+// ══════════════ AUTH ══════════════
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  errEl.classList.remove('show');
+  if (!email || !pass) { errEl.textContent = 'E-posta ve şifre zorunlu.'; errEl.classList.add('show'); return; }
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { errEl.textContent = 'E-posta veya şifre hatalı.'; errEl.classList.add('show'); return; }
+  await initApp();
+}
+
+async function checkAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) { await initApp(); }
+  else { document.getElementById('loginScreen').classList.add('active'); }
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  location.reload();
+}
+
+// ══════════════ STATE ══════════════
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+function fmt(d){const x=new Date(d);return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate());}
+function pad(n){return String(n).padStart(2,'0');}
+function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function parseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+
+let S = {
+  plans: {
+    aylik: { ad:'Aylık Plan', fiyat:1200, seans:4, sure:'/ ay', indirim:'' },
+    ucaylik: { ad:'3 Aylık Plan', fiyat:3200, seans:12, sure:'/ 3 ay', indirim:'%11 tasarruf' },
+    altiaylik: { ad:'6 Aylık Plan', fiyat:5800, seans:24, sure:'/ 6 ay', indirim:'%19 tasarruf' }
+  },
+  hastalar: [], randevular: [], notlar: [], odemeler: []
+};
+
+// ══════════════ VERİ YÜKLEME ══════════════
+async function loadAll() {
+  const [h, r, n, o, p] = await Promise.all([
+    sb.from('hastalar').select('*').order('id'),
+    sb.from('randevular').select('*').order('tarih'),
+    sb.from('notlar').select('*').order('id'),
+    sb.from('odemeler').select('*').order('id'),
+    sb.from('plans').select('*')
+  ]);
+  S.hastalar = (h.data||[]).map(x=>({
+    id: x.id, ad: x.ad, soyad: x.soyad, yas: x.yas||0, cinsiyet: x.cinsiyet||'Kadın',
+    boy: x.boy||0, kilo: x.kilo||0, hedefKilo: x.hedef_kilo||0,
+    tel: x.tel||'', email: x.email||'', hastalik: x.hastalik||'',
+    ilac: x.ilac||'', plan: x.plan||'aylik', notlar: x.notlar||''
+  }));
+  S.randevular = (r.data||[]).map(x=>({
+    id: x.id, hastaId: x.hasta_id, tur: x.tur, tarih: x.tarih,
+    saat: x.saat, saatBitis: x.saat_bitis||'', durum: x.durum, not: x.aciklama||''
+  }));
+  S.notlar = (n.data||[]).map(x=>({
+    id: x.id, hastaId: x.hasta_id, tur: x.tur, text: x.metin, tarih: x.tarih
+  }));
+  S.odemeler = (o.data||[]).map(x=>({
+    id: x.id, hastaId: x.hasta_id, plan: x.plan, tarih: x.tarih, yontem: x.yontem, tutar: x.tutar
+  }));
+  if (p.data && p.data.length) {
+    p.data.forEach(x => { S.plans[x.key] = { ad: x.ad, fiyat: x.fiyat, seans: x.seans, sure: x.sure, indirim: x.indirim||'' }; });
+  }
+}
+
+async function initApp() {
+  document.getElementById('loginScreen').classList.remove('active');
+  document.getElementById('appLoader').classList.add('active');
+  await loadAll();
+  document.getElementById('appLoader').classList.remove('active');
+  renderDashboard();
+}
+
+// ══════════════ HELPERS ══════════════
+function hastaAd(id){const h=S.hastalar.find(x=>x.id===id);return h?h.ad+' '+h.soyad:'?';}
+function hastaInit(id){const h=S.hastalar.find(x=>x.id===id);return h?(h.ad[0]+(h.soyad[0]||'')):'?';}
+function planLabel(k){return S.plans[k]?S.plans[k].ad:k;}
+function planFiyatStr(k){return S.plans[k]?(S.plans[k].fiyat.toLocaleString('tr-TR')+'₺'):'—';}
+const AYLAR=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const GUNLER=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+const GUNLER_F=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+function fmtTR(s){const[y,m,d]=s.split('-').map(Number);return d+' '+AYLAR[m-1]+' '+y;}
+function todayStr(){return fmt(TODAY);}
+function badgeLabel(d){return{bekleniyor:'Görüşme Bekleniyor',tamamlandi:'Görüşme Tamamlandı',iptal:'Görüşme İptal Oldu',ertelendi:'Görüşme Ertelendi',onaylandi:'Tamamlandı',bekliyor:'Bekleniyor',yeni:'Bekleniyor'}[d]||d;}
+function chipCol(i){return['','green','blue',''][i%4];}
+function durumCol(durum){return durum==='tamamlandi'||durum==='onaylandi'?'green':durum==='iptal'?'red':durum==='ertelendi'?'grey':'orange';}
+
+// ── page nav ──
+let calView='week', calDate=new Date(TODAY), silTarget=null;
+
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  if(id==='dashboard') renderDashboard();
+  if(id==='randevular') renderCal();
+  if(id==='hastalar'){renderHastaGrid();document.getElementById('hastaListeView').style.display='';document.getElementById('hastaDetayView').style.display='none';}
+  if(id==='mesajlar') renderMesajList();
+  if(id==='odemeler') renderOdemeler();
+  if(id==='notlar') renderNotlar();
+}
+
+// ── modal ──
+function openModal(id){
+  if(id==='randevuModal') initRandevuModal();
+  if(id==='hastaModal') initHastaModal();
+  if(id==='notModal') initNotModal();
+  if(id==='odemeModal') initOdemeModal();
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block'; t.style.animation='none';
+  void t.offsetWidth; t.style.animation='fadeIn .3s ease';
+  clearTimeout(t._t); t._t=setTimeout(()=>t.style.display='none',2800);
+}
+
+// ── dashboard ──
+function renderDashboard(){
+  const dow=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+  document.getElementById('bugunTarih').textContent=dow[TODAY.getDay()]+', '+TODAY.getDate()+' '+AYLAR[TODAY.getMonth()]+' '+TODAY.getFullYear();
+  const bugunR=S.randevular.filter(r=>r.tarih===todayStr());
+  document.getElementById('statBugun').textContent=bugunR.length;
+  document.getElementById('statBugunSub').textContent=bugunR.length>0?'↑ '+bugunR.length+' randevu':'Bugün randevu yok';
+  document.getElementById('statHasta').textContent=S.hastalar.length;
+  const gelir=S.odemeler.reduce((s,o)=>s+(S.plans[o.plan]?S.plans[o.plan].fiyat:0),0);
+  document.getElementById('statGelir').textContent=gelir.toLocaleString('tr-TR')+'₺';
+  const mon=new Date(TODAY);mon.setDate(TODAY.getDate()-((TODAY.getDay()+6)%7));
+  document.getElementById('statHaftalik').textContent=S.randevular.filter(r=>{const d=parseDate(r.tarih);return d>=mon&&d<=addDays(mon,6);}).length;
+  renderPlanMini();
+  const br=document.getElementById('dashBugunRandevu');
+  if(!bugunR.length){br.innerHTML='<div style="color:var(--muted);font-size:12.5px;text-align:center;padding:16px;font-style:italic">Bugün randevu yok.</div>';}
+  else{br.innerHTML=bugunR.sort((a,b)=>a.saat.localeCompare(b.saat)).map(r=>`
+    <div class="randevu-item">
+      <div class="r-av">${hastaInit(r.hastaId)}</div>
+      <div class="r-info"><div class="r-name">${hastaAd(r.hastaId)}</div><div class="r-meta"><span class="badge ${r.durum}">${badgeLabel(r.durum)}</span>&nbsp;${r.tur}</div></div>
+      <div><div class="r-time">${r.saat}${r.saatBitis?' – '+r.saatBitis:''}</div></div>
+    </div>`).join('');}
+  const dn=document.getElementById('dashNotlar');
+  const son=[...S.notlar].reverse().slice(0,3);
+  if(!son.length){dn.innerHTML='<div style="color:var(--muted);font-size:12.5px;text-align:center;padding:16px;font-style:italic">Not yok.</div>';}
+  else{dn.innerHTML=son.map(n=>`<div class="not-item"><div class="not-hasta">${hastaAd(n.hastaId)}</div><div class="not-text">${n.text}</div><div class="not-tarih">${fmtTR(n.tarih)}</div></div>`).join('');}
+}
+
+function renderPlanMini(){
+  const keys=['aylik','ucaylik','altiaylik'];
+  const el=document.getElementById('planMiniGrid');
+  if(!el) return;
+  el.innerHTML=keys.map((k,i)=>{
+    const p=S.plans[k];
+    return `<div class="plan-mini ${k}">
+      <div class="plan-mini-label">${p.ad}</div>
+      <div class="plan-mini-price">${p.fiyat.toLocaleString('tr-TR')}₺</div>
+      <div class="plan-mini-desc">${p.seans} seans</div>
+      ${p.indirim?`<div class="plan-mini-badge" style="background:${i===1?'var(--green)':'var(--blue)'}">${p.indirim}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ── calendar ──
+function setCalView(v,el){calView=v;document.querySelectorAll('.cal-view-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderCal();}
+function calNav(d){
+  if(calView==='day') calDate=addDays(calDate,d);
+  else if(calView==='week') calDate=addDays(calDate,d*7);
+  else if(calView==='month') calDate=new Date(calDate.getFullYear(),calDate.getMonth()+d,1);
+  else calDate=new Date(calDate.getFullYear()+d,0,1);
+  renderCal();
+}
+function calGoToday(){calDate=new Date(TODAY);renderCal();}
+function rdForDate(ds){return S.randevular.filter(r=>r.tarih===ds);}
+
+function renderCal(){
+  const t=document.getElementById('calTitle'),b=document.getElementById('calBody');
+  if(calView==='day') renderDay(t,b);
+  else if(calView==='week') renderWeek(t,b);
+  else if(calView==='month') renderMonth(t,b);
+  else renderYear(t,b);
+}
+function renderDay(t,b){
+  t.textContent=GUNLER_F[calDate.getDay()]+', '+calDate.getDate()+' '+AYLAR[calDate.getMonth()]+' '+calDate.getFullYear();
+  const ds=fmt(calDate),appts=rdForDate(ds);
+  const hours=['07','08','09','10','11','12','13','14','15','16','17','18','19'];
+  b.innerHTML='<div class="daily-grid">'+hours.map(h=>{
+    const sa=appts.filter(r=>r.saat.startsWith(h));
+    return `<div class="time-slot"><div class="time-label">${h}:00</div>
+      <div class="time-cell${sa.length?' has-appt':''}" onclick="addRandevuAt('${ds}','${h}:00')">
+        ${sa.map(r=>`<div class="appt-chip">
+          <div class="apdot ${r.durum==='tamamlandi'||r.durum==='onaylandi'?'green':r.durum==='iptal'?'red':r.durum==='ertelendi'?'grey':'orange'}"></div>
+          <div><div class="ap-name">${hastaAd(r.hastaId)}</div><div class="ap-type">${r.saat}${r.saatBitis?' – '+r.saatBitis:''} · ${r.tur}</div></div>
+          <div style="margin-left:auto;display:flex;gap:4px">
+            <span class="edit-pencil" onclick="event.stopPropagation();editRandevu(${r.id})">✏️</span>
+            <span class="edit-pencil" style="color:#c0392b" onclick="event.stopPropagation();askSil('randevu',${r.id})">🗑️</span>
+          </div></div>`).join('')}
+      </div></div>`;
+  }).join('')+'</div>';
+}
+function renderWeek(t,b){
+  const dow=(calDate.getDay()+6)%7;
+  const mon=addDays(calDate,-dow);
+  const days=Array.from({length:7},(_,i)=>addDays(mon,i));
+  t.textContent=mon.getDate()+' '+AYLAR[mon.getMonth()]+' – '+days[6].getDate()+' '+AYLAR[days[6].getMonth()]+' '+calDate.getFullYear();
+  const hours=['08','09','10','11','12','13','14','15','16','17','18'];
+  let html='<div class="week-header-row"><div></div>'+days.map(d=>`
+    <div class="wh-cell"><div class="wh-day">${GUNLER[d.getDay()]}</div>
+    <div class="wh-date ${fmt(d)===todayStr()?'today':''}">${d.getDate()}</div></div>`).join('')+'</div>';
+  hours.forEach(h=>{
+    html+='<div class="week-row"><div class="week-time-cell">'+h+'</div>';
+    days.forEach(d=>{
+      const ds=fmt(d),appts=S.randevular.filter(r=>r.tarih===ds&&r.saat.startsWith(h));
+      html+=`<div class="week-day-cell ${ds===todayStr()?'today-col':''}" onclick="addRandevuAt('${ds}','${h}:00')">
+        ${appts.map((r)=>`<span class="wk-chip ${durumCol(r.durum)}" onclick="event.stopPropagation();editRandevu(${r.id})" title="${hastaAd(r.hastaId)} - ${r.tur}">${hastaAd(r.hastaId)}</span>`).join('')}
+      </div>`;
+    });
+    html+='</div>';
+  });
+  b.innerHTML=html;
+}
+function renderMonth(t,b){
+  const y=calDate.getFullYear(),m=calDate.getMonth();
+  t.textContent=AYLAR[m]+' '+y;
+  const first=new Date(y,m,1),startDow=(first.getDay()+6)%7;
+  let html='<div class="month-grid">'+['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'].map(d=>`<div class="month-dow">${d}</div>`).join('');
+  let day=addDays(first,-startDow);
+  for(let w=0;w<6;w++){
+    for(let d=0;d<7;d++){
+      const ds=fmt(day),appts=rdForDate(ds),isToday=ds===todayStr(),isOther=day.getMonth()!==m;
+      html+=`<div class="month-cell${isToday?' today':''}${isOther?' other-month':''}" onclick="calClickDay('${ds}')">
+        <div class="month-num">${day.getDate()}</div>
+        ${appts.slice(0,3).map((r)=>`<span class="m-chip ${durumCol(r.durum)}">${hastaAd(r.hastaId)}</span>`).join('')}
+        ${appts.length>3?`<span style="font-size:9px;color:var(--muted)">+${appts.length-3}</span>`:''}
+      </div>`;
+      day=addDays(day,1);
+    }
+    if(day.getMonth()!==m&&w>=4) break;
+  }
+  b.innerHTML=html+'</div>';
+}
+function renderYear(t,b){
+  const y=calDate.getFullYear(); t.textContent=y+' Yılı';
+  let html='<div class="year-grid">';
+  for(let m=0;m<12;m++){
+    const first=new Date(y,m,1),startDow=(first.getDay()+6)%7;
+    html+=`<div class="year-month-card"><div class="year-month-title">${AYLAR[m]}</div><div class="year-mini-grid">`;
+    ['P','S','Ç','P','C','C','P'].forEach(d=>html+=`<div class="year-mini-dow">${d}</div>`);
+    let day=addDays(first,-startDow);
+    for(let i=0;i<42;i++){
+      const ds=fmt(day),inM=day.getMonth()===m,hasA=inM&&rdForDate(ds).length>0,isTod=ds===todayStr();
+      html+=inM?`<div class="year-mini-day${isTod?' today':hasA?' has-appt':''}" onclick="calClickDay('${ds}')">${day.getDate()}</div>`:'<div></div>';
+      day=addDays(day,1);
+    }
+    html+='</div></div>';
+  }
+  b.innerHTML=html+'</div>';
+}
+function calClickDay(ds){
+  calDate=parseDate(ds);
+  document.querySelectorAll('.cal-view-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.cal-view-btn').classList.add('active');
+  calView='day'; renderCal();
+}
+function addRandevuAt(ds,saat){
+  initRandevuModal();
+  document.getElementById('rTarih').value=ds;
+  const opts=buildTimeOptions();
+  const base=saat.substring(0,5);
+  const nearest=opts.find(o=>o>=base)||'09:00';
+  const idx=opts.indexOf(nearest);
+  const endVal=opts[Math.min(idx+5,opts.length-1)];
+  populateTimeSelects(nearest, endVal);
+  document.getElementById('randevuModal').classList.add('open');
+}
+
+// ── randevu crud ──
+function buildTimeOptions(){
+  const opts=[];
+  for(let h=7;h<=21;h++) for(let m=0;m<60;m+=10) opts.push(pad(h)+':'+pad(m));
+  return opts;
+}
+function populateTimeSelects(startVal='09:00', endVal='09:50'){
+  const opts=buildTimeOptions();
+  const html=opts.map(o=>`<option value="${o}">${o}</option>`).join('');
+  const s=document.getElementById('rSaat');
+  const e=document.getElementById('rSaatBitis');
+  s.innerHTML=html; e.innerHTML=html;
+  s.value=opts.includes(startVal)?startVal:'09:00';
+  e.value=opts.includes(endVal)?endVal:'09:50';
+  s.onchange=()=>{const idx=opts.indexOf(s.value);const defEnd=opts[Math.min(idx+5,opts.length-1)];if(opts.indexOf(e.value)<=idx) e.value=defEnd;};
+}
+function initRandevuModal(){
+  document.getElementById('editRandevuId').value='';
+  document.getElementById('randevuModalTitle').textContent='Yeni Randevu';
+  document.getElementById('rNot').value='';
+  document.getElementById('rTarih').value=todayStr();
+  document.getElementById('rDurum').value='bekleniyor';
+  document.getElementById('rHasta').innerHTML=S.hastalar.map(h=>`<option value="${h.id}">${h.ad} ${h.soyad}</option>`).join('');
+  populateTimeSelects('09:00','09:50');
+}
+function editRandevu(id){
+  const r=S.randevular.find(x=>x.id===id); if(!r) return;
+  initRandevuModal();
+  document.getElementById('editRandevuId').value=id;
+  document.getElementById('randevuModalTitle').textContent='Randevuyu Düzenle';
+  document.getElementById('rHasta').value=r.hastaId;
+  document.getElementById('rTur').value=r.tur;
+  document.getElementById('rTarih').value=r.tarih;
+  populateTimeSelects(r.saat, r.saatBitis||r.saat);
+  document.getElementById('rDurum').value=r.durum;
+  document.getElementById('rNot').value=r.not||'';
+  document.getElementById('randevuModal').classList.add('open');
+}
+async function saveRandevu(){
+  const eid=document.getElementById('editRandevuId').value;
+  const obj={hasta_id:parseInt(document.getElementById('rHasta').value),tur:document.getElementById('rTur').value,tarih:document.getElementById('rTarih').value,saat:document.getElementById('rSaat').value,saat_bitis:document.getElementById('rSaatBitis').value,durum:document.getElementById('rDurum').value,aciklama:document.getElementById('rNot').value};
+  if(!obj.tarih||!obj.saat){showToast('⚠️ Tarih ve saat zorunlu!');return;}
+  if(eid){
+    const {error}=await sb.from('randevular').update(obj).eq('id',parseInt(eid));
+    if(error){showToast('❌ Hata: '+error.message);return;}
+    showToast('✅ Randevu güncellendi!');
+  } else {
+    const {error}=await sb.from('randevular').insert(obj);
+    if(error){showToast('❌ Hata: '+error.message);return;}
+    showToast('✅ Randevu oluşturuldu!');
+  }
+  await loadAll();
+  closeModal('randevuModal'); renderCal(); renderDashboard();
+  if(document.getElementById('hastaDetayView').style.display!=='none') showHastaDetay(obj.hasta_id);
+}
+
+// ── sil ──
+function askSil(type,id){
+  silTarget={type,id};
+  const lb={randevu:'randevuyu',hasta:'hastayı (tüm randevu ve notları ile)',not:'notu',odeme:'ödeme kaydını'};
+  document.getElementById('silText').textContent='Bu '+lb[type]+' silmek istediğinize emin misiniz?';
+  document.getElementById('silModal').classList.add('open');
+}
+async function confirmSil(){
+  if(!silTarget) return;
+  const{type,id}=silTarget;
+  const tableMap={randevu:'randevular',hasta:'hastalar',not:'notlar',odeme:'odemeler'};
+  const {error}=await sb.from(tableMap[type]).delete().eq('id',id);
+  if(error){showToast('❌ Silinemedi: '+error.message);closeModal('silModal');return;}
+  await loadAll();
+  closeModal('silModal'); silTarget=null;
+  const pid=document.querySelector('.page.active')?.id;
+  if(pid==='randevular') renderCal();
+  if(pid==='hastalar'){renderHastaGrid();if(document.getElementById('hastaDetayView').style.display!=='none'){document.getElementById('hastaListeView').style.display='';document.getElementById('hastaDetayView').style.display='none';}}
+  if(pid==='notlar') renderNotlar();
+  if(pid==='odemeler') renderOdemeler();
+  if(pid==='dashboard') renderDashboard();
+  showToast('🗑️ Silindi.');
+}
+
+// ── hasta crud ──
+function initHastaModal(){
+  document.getElementById('editHastaId').value='';
+  document.getElementById('hastaModalTitle').textContent='Yeni Hasta Kaydı';
+  ['hAd','hSoyad','hTel','hEmail','hHastalik','hIlac','hNotlar'].forEach(id=>document.getElementById(id).value='');
+  ['hYas','hBoy','hKilo','hHedefKilo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('hCinsiyet').value='Kadın';
+  populatePlanSelect('hPlan','aylik');
+}
+function populatePlanSelect(selId, selected){
+  const sel=document.getElementById(selId);
+  sel.innerHTML=Object.entries(S.plans).map(([k,p])=>`<option value="${k}" ${k===selected?'selected':''}>${p.ad} — ${p.fiyat.toLocaleString('tr-TR')}₺</option>`).join('');
+}
+function editHasta(id){
+  const h=S.hastalar.find(x=>x.id===id); if(!h) return;
+  document.getElementById('editHastaId').value=id;
+  document.getElementById('hastaModalTitle').textContent='Hasta Düzenle';
+  document.getElementById('hAd').value=h.ad; document.getElementById('hSoyad').value=h.soyad;
+  document.getElementById('hYas').value=h.yas||''; document.getElementById('hCinsiyet').value=h.cinsiyet||'Kadın';
+  document.getElementById('hBoy').value=h.boy||''; document.getElementById('hTel').value=h.tel||'';
+  document.getElementById('hEmail').value=h.email||''; document.getElementById('hKilo').value=h.kilo||'';
+  document.getElementById('hHedefKilo').value=h.hedefKilo||''; document.getElementById('hHastalik').value=h.hastalik||'';
+  document.getElementById('hIlac').value=h.ilac||''; document.getElementById('hNotlar').value=h.notlar||'';
+  populatePlanSelect('hPlan', h.plan||'aylik');
+  document.getElementById('hastaModal').classList.add('open');
+}
+async function saveHasta(){
+  const eid=document.getElementById('editHastaId').value;
+  const ad=document.getElementById('hAd').value.trim(),soyad=document.getElementById('hSoyad').value.trim();
+  if(!ad||!soyad){showToast('⚠️ Ad ve soyad zorunlu!');return;}
+  const obj={ad,soyad,yas:parseInt(document.getElementById('hYas').value)||0,cinsiyet:document.getElementById('hCinsiyet').value,boy:parseInt(document.getElementById('hBoy').value)||0,kilo:parseFloat(document.getElementById('hKilo').value)||0,hedef_kilo:parseFloat(document.getElementById('hHedefKilo').value)||0,tel:document.getElementById('hTel').value,email:document.getElementById('hEmail').value,hastalik:document.getElementById('hHastalik').value,ilac:document.getElementById('hIlac').value,plan:document.getElementById('hPlan').value,notlar:document.getElementById('hNotlar').value};
+  if(eid){
+    const {error}=await sb.from('hastalar').update(obj).eq('id',parseInt(eid));
+    if(error){showToast('❌ Hata: '+error.message);return;}
+    showToast('✅ Hasta güncellendi!');
+  } else {
+    const {error}=await sb.from('hastalar').insert(obj);
+    if(error){showToast('❌ Hata: '+error.message);return;}
+    showToast('✅ Hasta kaydı oluşturuldu!');
+  }
+  await loadAll();
+  closeModal('hastaModal'); renderHastaGrid(); renderDashboard(); renderOdemeler();
+  if(document.getElementById('hastaDetayView').style.display!=='none') showHastaDetay(parseInt(eid)||S.hastalar[S.hastalar.length-1]?.id);
+}
+function renderHastaGrid(filter=''){
+  const g=document.getElementById('hastaGrid');
+  const list=S.hastalar.filter(h=>{if(!filter) return true;const q=filter.toLowerCase();return (h.ad+' '+h.soyad).toLowerCase().includes(q)||(h.hastalik||'').toLowerCase().includes(q)||(h.tel||'').includes(q);});
+  if(!list.length){g.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:30px;font-style:italic">Hasta bulunamadı.</div>';return;}
+  g.innerHTML=list.map(h=>`
+    <div class="hasta-row" onclick="showHastaDetay(${h.id})">
+      <div class="h-av">${h.ad[0]}${h.soyad[0]||''}</div>
+      <div><div class="h-name">${h.ad} ${h.soyad}</div><div class="h-info">${h.yas} yaş · ${h.cinsiyet}${h.boy?' · '+h.boy+'cm':''} · ${h.kilo}kg → ${h.hedefKilo}kg · ${planLabel(h.plan)}</div></div>
+      <div class="h-actions">
+        <div class="icon-btn" onclick="event.stopPropagation();editHasta(${h.id})" title="Düzenle">✏️</div>
+        <div class="icon-btn" onclick="event.stopPropagation();openNotForHasta(${h.id})" title="Not Ekle">📝</div>
+        <div class="icon-btn" onclick="event.stopPropagation();askSil('hasta',${h.id})" title="Sil" style="border-color:#F0C0BB">🗑️</div>
+      </div>
+    </div>`).join('');
+}
+function filterHastalar(v){renderHastaGrid(v);}
+function showHastaDetay(hId){
+  const h=S.hastalar.find(x=>x.id===hId); if(!h) return;
+  document.getElementById('hastaListeView').style.display='none';
+  const dv=document.getElementById('hastaDetayView'); dv.style.display='';
+  const hR=[...S.randevular.filter(r=>r.hastaId===hId)].sort((a,b)=>b.tarih.localeCompare(a.tarih));
+  const hN=S.notlar.filter(n=>n.hastaId===hId);
+  const bmi=h.boy&&h.kilo?(h.kilo/((h.boy/100)**2)).toFixed(1):'—';
+  const p=S.plans[h.plan]||{};
+  dv.innerHTML=`
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px">
+      <button class="btn-ghost btn-sm" onclick="document.getElementById('hastaListeView').style.display='';document.getElementById('hastaDetayView').style.display='none';renderHastaGrid()">← Listeye Dön</button>
+      <span style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600">${h.ad} ${h.soyad}</span>
+    </div>
+    <div class="detay-header">
+      <div class="detay-av">${h.ad[0]}${h.soyad[0]||''}</div>
+      <div>
+        <div class="detay-isim">${h.ad} ${h.soyad}</div>
+        <div class="detay-meta">${h.yas} yaş · ${h.cinsiyet}${h.boy?' · '+h.boy+' cm':''} · ${h.tel||'—'}</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:7px">
+        <button class="btn-primary" onclick="editHasta(${h.id})">✏️ Düzenle</button>
+        <button onclick="openRandevuForHasta(${h.id})" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif">📅 Randevu</button>
+      </div>
+    </div>
+    <div class="detay-grid">
+      <div class="detay-card">
+        <div class="detay-card-title">Kilo & Ölçüler</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><div style="font-size:9.5px;color:var(--muted);font-weight:500">Mevcut</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700">${h.kilo} kg</div></div>
+          <div><div style="font-size:9.5px;color:var(--muted);font-weight:500">Hedef</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--green)">${h.hedefKilo} kg</div></div>
+          <div><div style="font-size:9.5px;color:var(--muted);font-weight:500">Boy</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700">${h.boy||'—'} cm</div></div>
+          <div><div style="font-size:9.5px;color:var(--muted);font-weight:500">BMI</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700">${bmi}</div></div>
+        </div>
+      </div>
+      <div class="detay-card">
+        <div class="detay-card-title">Ödeme Planı</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--gold)">${planLabel(h.plan)}</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:3px">${p.fiyat?p.fiyat.toLocaleString('tr-TR')+'₺':''} ${p.sure||''} · ${p.seans||'—'} seans</div>
+        <button class="btn-ghost btn-sm" style="margin-top:10px" onclick="editHasta(${h.id})">Plan Değiştir</button>
+      </div>
+      <div class="detay-card">
+        <div class="detay-card-title">Hastalıklar / Tanılar</div>
+        ${h.hastalik?h.hastalik.split(',').map(x=>`<span class="hastalik-tag">${x.trim()}</span>`).join(''):'<span style="color:var(--muted);font-size:11.5px">Kayıt yok</span>'}
+      </div>
+      <div class="detay-card">
+        <div class="detay-card-title">Kullandığı İlaçlar</div>
+        ${h.ilac?h.ilac.split(',').map(x=>`<span class="ilag-tag">${x.trim()}</span>`).join(''):'<span style="color:var(--muted);font-size:11.5px">Kayıt yok</span>'}
+      </div>
+      <div class="detay-card" style="grid-column:1/-1">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="detay-card-title" style="margin:0">Hasta Notları</div>
+          <button class="btn-ghost btn-sm" onclick="openNotForHasta(${h.id})">＋ Not Ekle</button>
+        </div>
+        ${hN.length?hN.map(n=>`<div class="not-item">
+          <div style="display:flex;justify-content:space-between"><div class="not-hasta">${n.tur}</div>
+          <div style="display:flex;gap:5px"><span class="edit-pencil" onclick="editNot(${n.id})">✏️</span><span class="edit-pencil" style="color:var(--red)" onclick="askSil('not',${n.id})">🗑️</span></div></div>
+          <div class="not-text">${n.text}</div><div class="not-tarih">${fmtTR(n.tarih)}</div></div>`).join(''):'<div style="color:var(--muted);font-size:12.5px;font-style:italic">Henüz not yok.</div>'}
+      </div>
+      <div class="detay-card" style="grid-column:1/-1">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="detay-card-title" style="margin:0">Randevuları</div>
+          <button class="btn-ghost btn-sm" onclick="openRandevuForHasta(${h.id})">＋ Randevu Ekle</button>
+        </div>
+        ${hR.length?hR.map(r=>`<div class="randevu-item">
+          <div class="r-av">${hastaInit(r.hastaId)}</div>
+          <div class="r-info"><div class="r-name">${r.tur}</div><div class="r-meta"><span class="badge ${r.durum}">${badgeLabel(r.durum)}</span>&nbsp;${fmtTR(r.tarih)} · ${r.saat}${r.saatBitis?' – '+r.saatBitis:''}</div></div>
+          <div style="display:flex;gap:5px;align-items:center">
+            <span class="edit-pencil" onclick="editRandevu(${r.id})">✏️</span>
+            <span class="edit-pencil" style="color:var(--red)" onclick="askSil('randevu',${r.id})">🗑️</span>
+          </div></div>`).join(''):'<div style="color:var(--muted);font-size:12.5px;font-style:italic">Henüz randevu yok.</div>'}
+      </div>
+    </div>`;
+}
+function openRandevuForHasta(hId){initRandevuModal();document.getElementById('rHasta').value=hId;document.getElementById('randevuModal').classList.add('open');}
+function openNotForHasta(hId){initNotModal();document.getElementById('nHasta').value=hId;document.getElementById('notModal').classList.add('open');}
+
+// ── not crud ──
+function initNotModal(){
+  document.getElementById('nHasta').innerHTML=S.hastalar.map(h=>`<option value="${h.id}">${h.ad} ${h.soyad}</option>`).join('');
+  document.getElementById('editNotId').value=''; document.getElementById('nText').value=''; document.getElementById('nTur').value='Genel Not';
+}
+function editNot(id){
+  const n=S.notlar.find(x=>x.id===id); if(!n) return;
+  initNotModal();
+  document.getElementById('editNotId').value=id; document.getElementById('nHasta').value=n.hastaId;
+  document.getElementById('nTur').value=n.tur; document.getElementById('nText').value=n.text;
+  document.getElementById('notModal').classList.add('open');
+}
+async function saveNot(){
+  const eid=document.getElementById('editNotId').value;
+  const text=document.getElementById('nText').value.trim();
+  if(!text){showToast('⚠️ Not boş olamaz!');return;}
+  const hastaId=parseInt(document.getElementById('nHasta').value);
+  const obj={hasta_id:hastaId,tur:document.getElementById('nTur').value,metin:text,tarih:todayStr()};
+  if(eid){
+    const {error}=await sb.from('notlar').update(obj).eq('id',parseInt(eid));
+    if(error){showToast('❌ Hata: '+error.message);return;}
+    showToast('✅ Not güncellendi!');
+  } else {
+    const {error}=await sb.from('notlar').insert(obj);
+    if(error){showToast('❌ Hata: '+error.message);return;}
+    showToast('✅ Not kaydedildi!');
+  }
+  await loadAll();
+  closeModal('notModal'); renderNotlar(); renderDashboard();
+  if(document.getElementById('hastaDetayView').style.display!=='none') showHastaDetay(hastaId);
+}
+function renderNotlar(filter=''){
+  const g=document.getElementById('notlarGrid');
+  let list=filter?S.notlar.filter(n=>(n.text+n.tur).toLowerCase().includes(filter.toLowerCase())||hastaAd(n.hastaId).toLowerCase().includes(filter.toLowerCase())):S.notlar;
+  if(!list.length){g.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:30px;font-style:italic">Not bulunamadı.</div>';return;}
+  const byH={};
+  list.forEach(n=>{if(!byH[n.hastaId])byH[n.hastaId]=[];byH[n.hastaId].push(n);});
+  g.innerHTML=Object.entries(byH).map(([hId,notes])=>{
+    const h=S.hastalar.find(x=>x.id===parseInt(hId)); if(!h) return '';
+    return `<div class="card" style="margin-bottom:12px"><div class="card-body">
+      <div style="display:flex;align-items:center;gap:11px;margin-bottom:12px">
+        <div class="h-av">${h.ad[0]}${h.soyad[0]||''}</div>
+        <div><div class="h-name">${h.ad} ${h.soyad}</div><div class="h-info">${h.yas} yaş · ${h.cinsiyet}</div></div>
+        <button class="btn-ghost btn-sm" style="margin-left:auto" onclick="editHasta(${h.id})">✏️ Düzenle</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:10px">
+        ${h.hastalik?h.hastalik.split(',').map(x=>`<span class="hastalik-tag">${x.trim()}</span>`).join(''):''}
+        ${h.ilac?h.ilac.split(',').map(x=>`<span class="ilag-tag">${x.trim()}</span>`).join(''):''}
+      </div>
+      ${notes.map(n=>`<div class="not-item">
+        <div style="display:flex;justify-content:space-between"><div class="not-hasta">${n.tur}</div>
+        <div style="display:flex;gap:5px"><span class="edit-pencil" onclick="editNot(${n.id})">✏️</span><span class="edit-pencil" style="color:var(--red)" onclick="askSil('not',${n.id})">🗑️</span></div></div>
+        <div class="not-text">${n.text}</div><div class="not-tarih">${fmtTR(n.tarih)}</div></div>`).join('')}
+    </div></div>`;
+  }).join('');
+}
+function filterNotlar(v){renderNotlar(v);}
+
+// ── plan crud ──
+function editPlan(key){
+  const p=S.plans[key]; if(!p) return;
+  document.getElementById('editPlanKey').value=key;
+  document.getElementById('pAd').value=p.ad;
+  document.getElementById('pFiyat').value=p.fiyat;
+  document.getElementById('pSeans').value=p.seans;
+  document.getElementById('pSure').value=p.sure;
+  document.getElementById('pIndirim').value=p.indirim||'';
+  document.getElementById('planDuzenleModal').classList.add('open');
+}
+async function savePlan(){
+  const key=document.getElementById('editPlanKey').value;
+  const fiyat=parseInt(document.getElementById('pFiyat').value);
+  if(!key||isNaN(fiyat)){showToast('⚠️ Fiyat zorunlu!');return;}
+  const obj={ad:document.getElementById('pAd').value,fiyat,seans:parseInt(document.getElementById('pSeans').value),sure:document.getElementById('pSure').value,indirim:document.getElementById('pIndirim').value};
+  const {error}=await sb.from('plans').update(obj).eq('key',key);
+  if(error){showToast('❌ Hata: '+error.message);return;}
+  await loadAll();
+  closeModal('planDuzenleModal');
+  renderOdemeler(); renderDashboard(); renderPlanMini();
+  showToast('✅ Plan güncellendi!');
+}
+function renderOdemeler(){
+  const planColors={aylik:'#B8860B',ucaylik:'var(--green)',altiaylik:'var(--blue)'};
+  const planBg={aylik:'#FFFDF4',ucaylik:'#F2FAF5',altiaylik:'#F0F5FC'};
+  const planBorder={aylik:'#EDD98A',ucaylik:'#A8DBBE',altiaylik:'#A8BDE8'};
+  const counts={aylik:0,ucaylik:0,altiaylik:0};
+  S.hastalar.forEach(h=>{if(counts[h.plan]!==undefined)counts[h.plan]++;});
+  const el=document.getElementById('odemePlanCards');
+  el.innerHTML=Object.entries(S.plans).map(([k,p])=>`
+    <div class="odeme-big ${k==='aylik'?'a':k==='ucaylik'?'b':'c'}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+        <div style="text-align:left">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:${planColors[k]};margin-bottom:4px">${p.ad}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:700;line-height:1;color:var(--ink)">${p.fiyat.toLocaleString('tr-TR')}₺</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:4px">${p.seans} seans ${p.sure}${p.indirim?' · <b style="color:'+planColors[k]+'">'+ p.indirim+'</b>':''}</div>
+        </div>
+        <button class="btn-ghost btn-sm" onclick="editPlan('${k}')" style="flex-shrink:0">✏️ Düzenle</button>
+      </div>
+      <div style="background:${planBg[k]};border:1px solid ${planBorder[k]};border-radius:8px;padding:10px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:600;color:${planColors[k]}">Aktif Hasta: ${counts[k]}</div>
+      </div>
+      <button class="btn-primary" style="width:100%;justify-content:center;background:${planColors[k]}" onclick="openModal('odemeModal')">Hasta Ata</button>
+    </div>`).join('');
+  const ol=document.getElementById('odemeListesi');
+  if(!S.odemeler.length){ol.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:18px;font-style:italic">Henüz ödeme kaydı yok.</div>';return;}
+  ol.innerHTML=[...S.odemeler].reverse().map(o=>`
+    <div class="randevu-item">
+      <div class="r-av">${hastaInit(o.hastaId)}</div>
+      <div class="r-info"><div class="r-name">${hastaAd(o.hastaId)}</div>
+        <div class="r-meta"><span class="badge onaylandi">Ödendi</span>&nbsp;${planLabel(o.plan)} — ${o.tutar} · ${o.yontem}</div></div>
+      <div style="text-align:right">
+        <div class="r-time" style="font-size:11.5px">${fmtTR(o.tarih)}</div>
+        <span class="edit-pencil" style="color:var(--red)" onclick="askSil('odeme',${o.id})">🗑️</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── ödeme modal ──
+function initOdemeModal(){
+  document.getElementById('oHasta').innerHTML=S.hastalar.map(h=>`<option value="${h.id}">${h.ad} ${h.soyad}</option>`).join('');
+  populatePlanSelect('oPlan','aylik');
+  document.getElementById('oTarih').value=todayStr();
+  updateOdemeTutar();
+}
+function updateOdemeTutar(){
+  const k=document.getElementById('oPlan').value;
+  const p=S.plans[k];
+  document.getElementById('oTutar').value=p?p.fiyat.toLocaleString('tr-TR')+'₺':'';
+}
+async function saveOdeme(){
+  const k=document.getElementById('oPlan').value;
+  const p=S.plans[k];
+  const hastaId=parseInt(document.getElementById('oHasta').value);
+  const obj={hasta_id:hastaId,plan:k,tarih:document.getElementById('oTarih').value,yontem:document.getElementById('oYontem').value,tutar:p?p.fiyat.toLocaleString('tr-TR')+'₺':'—'};
+  // Hasta planını güncelle
+  await sb.from('hastalar').update({plan:k}).eq('id',hastaId);
+  const {error}=await sb.from('odemeler').insert(obj);
+  if(error){showToast('❌ Hata: '+error.message);return;}
+  await loadAll();
+  closeModal('odemeModal'); renderOdemeler(); renderDashboard();
+  showToast('✅ Ödeme planı atandı!');
+}
+
+// ── mesaj ──
+function renderMesajList(){
+  document.getElementById('mesajHastaList').innerHTML=S.hastalar.map(h=>`
+    <div class="mesaj-satir">
+      <input type="checkbox" class="mesaj-cb" checked>
+      <div class="h-av" style="width:32px;height:32px;font-size:11.5px">${h.ad[0]}${h.soyad[0]||''}</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600">${h.ad} ${h.soyad}</div><div style="font-size:11px;color:var(--muted)">${h.tel||'Telefon yok'}</div></div>
+      <div style="font-size:11.5px;color:var(--gold);font-weight:600">${planLabel(h.plan)}</div>
+    </div>`).join('');
+}
+function switchMesajTab(el,type){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active');
+  const tpl={sms:'Sayın [AD SOYAD], [TARİH] [SAAT] randevunuzu hatırlatırız. Dyt. Kübra Nur Kılıçer 🌿',eposta:'Sayın [AD SOYAD],\n\n[TARİH] tarihinde saat [SAAT]\'deki randevunuzu hatırlatmak isteriz.\n\nSağlıklı günler,\nDyt. Kübra Nur Kılıçer\nNutriAsist 🌿',haftalik:'Merhaba [AD SOYAD] 👋 Bu haftaki randevunuz [TARİH] [SAAT]\'dedir. Plan: [PLAN]. — NutriAsist 🌿'};
+  document.getElementById('mesajSablon').value=tpl[type];
+}
+function selectAll(v){document.querySelectorAll('.mesaj-cb').forEach(cb=>cb.checked=v);}
+function sendBulkMessage(){const n=document.querySelectorAll('.mesaj-cb:checked').length;showToast('✅ '+n+' hastaya mesaj gönderildi!');}
+
+// ── INIT ──
+checkAuth();
+</script>
+</body>
+</html>
